@@ -1,0 +1,123 @@
+<section id="performance" class="py-12 bg-gray-50">
+  <div class="container mx-auto px-6">
+    <h2 class="text-3xl font-bold mb-6">Performance and Key Factors</h2>
+    <p class="mb-6 text-gray-700 leading-relaxed">
+      A converter's efficiency is governed by thermodynamics and material science. 
+      The emitter temperature is the primary driver of performance, while the choice of 
+      materials and the collector's temperature also play crucial roles. 
+      Use the slider below to see how collector temperature impacts the theoretical maximum efficiency.
+    </p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Efficiency Chart -->
+      <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-lg">
+        <div class="chart-container" style="height:400px;">
+          <canvas id="efficiencyChart"></canvas>
+        </div>
+        <div class="mt-6">
+          <label for="collectorSlider" class="block text-center font-semibold mb-2">
+            Collector Temperature: 
+            <span id="collectorTemp" class="font-bold text-blue-600">800</span> K
+          </label>
+          <input id="collectorSlider" type="range" min="500" max="1200" value="800" class="w-full">
+        </div>
+      </div>
+
+      <!-- Work Function Chart -->
+      <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-lg">
+        <div class="chart-container" style="height:400px;">
+          <canvas id="materialsChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+// ================= Efficiency Chart ==================
+const effCtx = document.getElementById('efficiencyChart').getContext('2d');
+const efficiencyChart = new Chart(effCtx, {
+  type: 'line',
+  data: {
+    labels: ['1400 K', '1500 K', '1600 K', '1700 K', '1800 K', '1900 K', '2000 K'],
+    datasets: [
+      {
+        label: 'Ideal Carnot Efficiency (%)',
+        data: [30, 34, 38, 42, 45, 48, 51],
+        borderColor: '#3b82f6',
+        borderDash: [5, 5],
+        borderWidth: 2,
+        fill: false,
+        tension: 0.3,
+        pointBackgroundColor: '#3b82f6'
+      },
+      {
+        label: 'Typical Thermionic Efficiency (%)',
+        data: [5, 7, 10, 13, 16, 18, 20],
+        borderColor: '#ef4444',
+        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+        fill: true,
+        tension: 0.3,
+        pointBackgroundColor: '#ef4444'
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      y: { title: { display: true, text: 'Conversion Efficiency (%)' }, min: 0, max: 60 },
+      x: { title: { display: true, text: 'Emitter Temperature' } }
+    }
+  }
+});
+
+// ================= Materials Chart ==================
+const matCtx = document.getElementById('materialsChart').getContext('2d');
+const materialsChart = new Chart(matCtx, {
+  type: 'bar',
+  data: {
+    labels: [
+      'Pure Tungsten Emitter',
+      'Lanthanum Hexaboride (LaB6) Emitter',
+      'Barium Oxide Coated Emitter',
+      'Cesium Coated Collector',
+      'Clean Molybdenum Collector'
+    ],
+    datasets: [{
+      label: 'Work Function (eV)',
+      data: [4.5, 2.7, 2.2, 1.9, 4.2],
+      backgroundColor: ['#6b7280', '#9ca3af', '#d1d5db', '#3b82f6', '#4b5563']
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    indexAxis: 'y',
+    scales: {
+      x: { title: { display: true, text: 'Work Function (eV)' }, min: 0, max: 5 }
+    },
+    plugins: { legend: { display: false } }
+  }
+});
+
+// ================= Slider Logic ==================
+const slider = document.getElementById('collectorSlider');
+const tempLabel = document.getElementById('collectorTemp');
+
+slider.addEventListener('input', () => {
+  const collectorTemp = parseInt(slider.value);
+  tempLabel.textContent = collectorTemp;
+
+  // Scale thermionic efficiency based on collector temp
+  efficiencyChart.data.datasets[1].data = [5, 7, 10, 13, 16, 18, 20].map(val => {
+    return (val * collectorTemp) / 1000; 
+  });
+
+  efficiencyChart.update();
+});
+</script>
